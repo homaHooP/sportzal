@@ -1,14 +1,16 @@
-﻿using MediatR;
+﻿using GymAppApi.Application.Gyms.Commands;
+using GymAppApi.Domain.Models;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using GymAppApi.Domain.Models;
-using GymAppApi.Application.Gyms.Commands;
 
 namespace GymAppApi.Controllers
 {
     [Route("api/gyms")]
     [ApiController]
-    public class GymController(IMediator _mediator) : ControllerBase
+    [Authorize (Roles = "Manager")]
+    public class GymsController(IMediator _mediator) : ControllerBase
     {
         [HttpPost("")]
         [ProducesResponseType(StatusCodes.Status201Created)]

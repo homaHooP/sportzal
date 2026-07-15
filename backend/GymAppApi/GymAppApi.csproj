@@ -27,6 +27,7 @@
     <Folder Include="Application\Gyms\Queries\" />
     <Folder Include="Application\Memberships\" />
     <Folder Include="Application\Sessions\" />
+    <Folder Include="Application\Users\Queries\" />
   </ItemGroup>
 
 </Project>

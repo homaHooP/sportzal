@@ -3,6 +3,7 @@ using GymAppApi.Application;
 using GymAppApi.Data;
 using GymAppApi.Domain.Models;
 using GymAppApi.Middleware;
+using GymAppApi.Services.Token;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -63,6 +64,9 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 });
+
+builder.Services.AddScoped<ITokenService, TokenService>();
+
 #endregion
 
 #region MediatR 
