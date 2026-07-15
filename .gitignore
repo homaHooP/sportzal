@@ -1,0 +1,17 @@
+# .NET
+backend/**/bin/
+backend/**/obj/
+backend/**/appsettings.Development.json
+backend/**/appsettings.*.json
+!backend/**/appsettings.json
+!backend/**/appsettings.Example.json
+*.user
+
+# Node / React 
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# IDE
+.vs/
+.idea/
