@@ -31,6 +31,12 @@ namespace GymAppApi.Data
                 entity.Property(u => u.Birthday).IsRequired();
             });
 
+            builder.Entity<User>()
+                .HasMany(u => u.UserRoles)
+                .WithOne()
+                .HasForeignKey(ur => ur.UserId)
+                .IsRequired();
+
             builder.Entity<Membership>(entity =>
             {
                 entity.Property(m => m.Price).HasPrecision(10, 2);

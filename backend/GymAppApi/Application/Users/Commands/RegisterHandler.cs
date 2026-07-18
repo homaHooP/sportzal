@@ -4,6 +4,7 @@ using GymAppApi.Domain.DTO;
 using GymAppApi.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using GymAppApi.Domain.Constants;
 
 namespace GymAppApi.Application.Users.Commands
 {
@@ -39,7 +40,7 @@ namespace GymAppApi.Application.Users.Commands
                     result.Errors.Select(e => new ValidationFailure("Password", e.Description)).ToList()
                 );
 
-            var roleResult = await _userManager.AddToRoleAsync(newUser, "Client");
+            var roleResult = await _userManager.AddToRoleAsync(newUser, RoleNames.Client);
             if (!roleResult.Succeeded)
                 throw new ValidationException(
                     roleResult.Errors.Select(e => new ValidationFailure("Role", e.Description)).ToList()

@@ -9,7 +9,7 @@ namespace GymAppApi.Controllers
 {
     [Route("api/gyms")]
     [ApiController]
-    [Authorize (Roles = "Manager")]
+    [Authorize (Policy = "RequireHeadManager")]
     public class GymsController(IMediator _mediator) : ControllerBase
     {
         [HttpPost("")]
