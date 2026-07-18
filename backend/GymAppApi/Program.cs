@@ -1,24 +1,29 @@
 using FluentValidation;
 using GymAppApi.Application;
+using GymAppApi.Application.Common.Behaviors;
 using GymAppApi.Data;
 using GymAppApi.Domain.Models;
 using GymAppApi.Middleware;
+using GymAppApi.Services;
+using GymAppApi.Services.Token;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using GymAppApi.Domain.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region Validation
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<CurrentUserService>();
 
-builder.Services.AddScoped(
-    typeof(IPipelineBehavior<,>),
-    typeof(GymAppApi.Application.Common.Behaviors.ValidationBehavior<,>));
+builder.Services.AddScoped(typeof(IPipelineBehavior<,>),typeof(ValidationBehavior<,>));
+builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
 #endregion
 
 builder.Services.AddControllers();
@@ -63,6 +68,23 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 });
+
+builder.Services.AddScoped<ITokenService, TokenService>();
+
+#endregion
+
+#region Policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireManager", policy =>
+        policy.RequireRole(RoleNames.Manager, RoleNames.HeadManager));
+
+    options.AddPolicy("RequireHeadManager", policy =>
+        policy.RequireRole(RoleNames.HeadManager));
+
+    options.AddPolicy("RequireTrainer", policy =>
+        policy.RequireRole(RoleNames.Trainer, RoleNames.Manager, RoleNames.HeadManager));
+});
 #endregion
 
 #region MediatR 
@@ -72,11 +94,11 @@ builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 var app = builder.Build();
 
-#region Roles and Policies
+#region Roles
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-    string[] roles = { "Client", "Trainer", "Manager", "HeadManager" };
+    string[] roles = { RoleNames.Client, RoleNames.Trainer, RoleNames.Manager, RoleNames.HeadManager };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
