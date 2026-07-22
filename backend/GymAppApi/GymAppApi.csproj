@@ -23,10 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Bookings\" />
-    <Folder Include="Application\Gyms\Queries\" />
-    <Folder Include="Application\Memberships\" />
-    <Folder Include="Application\Sessions\" />
+    <None Include="Application\Bookings\Queries\GetGymSessionsBookingsCommand.cs" />
   </ItemGroup>
 
 </Project>

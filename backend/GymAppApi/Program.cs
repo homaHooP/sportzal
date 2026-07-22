@@ -2,6 +2,7 @@ using FluentValidation;
 using GymAppApi.Application;
 using GymAppApi.Application.Common.Behaviors;
 using GymAppApi.Data;
+using GymAppApi.Domain.Constants;
 using GymAppApi.Domain.Models;
 using GymAppApi.Middleware;
 using GymAppApi.Services;
@@ -9,10 +10,10 @@ using GymAppApi.Services.Token;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using GymAppApi.Domain.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,6 +68,43 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = async context =>
+        {
+            context.HandleResponse();
+
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.ContentType = "application/problem+json";
+
+            var problem = new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Unauthorized",
+                Detail = context.AuthenticateFailure is SecurityTokenExpiredException
+                    ? "Token has expired"
+                    : "Authentication token is missing or invalid",
+                Instance = context.Request.Path
+            };
+
+            await context.Response.WriteAsJsonAsync(problem);
+        },
+        OnForbidden = async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            context.Response.ContentType = "application/problem+json";
+
+            var problem = new ProblemDetails
+            {
+                Status = StatusCodes.Status403Forbidden,
+                Title = "Forbidden",
+                Detail = "You do not have permission to perform this action",
+                Instance = context.Request.Path
+            };
+
+            await context.Response.WriteAsJsonAsync(problem);
+        }
+    };
 });
 
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -92,6 +130,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Progr
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 #endregion
 
+builder.Services.AddScoped<GymManagerDemotionService, GymManagerDemotionService>();
 var app = builder.Build();
 
 #region Roles

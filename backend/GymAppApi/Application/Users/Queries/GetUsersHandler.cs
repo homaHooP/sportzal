@@ -13,6 +13,7 @@ namespace GymAppApi.Application.Users.Queries
         public async Task<IEnumerable<UserDto>> Handle(GetUsersCommand command, CancellationToken cancellationToken)
         {
             return await _context.Users
+                .Where(u=>u.WasDeactivated == null)
                 .Select(u => new UserDto
                 {
                     Id = u.Id,

@@ -16,6 +16,9 @@ namespace GymAppApi.Domain.Models
         [RegularExpression("^[а-яА-ЯіІїЇєЄa-zA-Z0-9\\s\\.,\\-\\/№]{5,200}$", ErrorMessage = "Gym address must be between 5 and 200 characters and can only contain letters, numbers and spaces")]
         public string Address { get; set; } = string.Empty;
 
+        public DateTime? DeletedAt { get; set; }
+        public ICollection<UserGymManager> Managers { get; set; } = new List<UserGymManager>();
+        public ICollection<Membership> Memberships { get; set; } = new List<Membership>();
         public ICollection<Session> Sessions { get; set; } = new List<Session>();
     }
 }

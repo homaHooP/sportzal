@@ -15,6 +15,12 @@ namespace GymAppApi.Domain.Models
         [ForeignKey(nameof(ClientId))]
         public UserClient Client { get; set; } = null!;
 
+        [Required]
+        public Guid GymId { get; set; }
+
+        [ForeignKey(nameof(GymId))]
+        public Gym Gym { get; set; }
+
         [Required(ErrorMessage = "Membership type is required")]
         public MembershipType Type { get; set; }
 
@@ -23,14 +29,8 @@ namespace GymAppApi.Domain.Models
 
         [Required(ErrorMessage = "Membership end date is required")]
         public DateTime EndDate { get; set; } = DateTime.MinValue;
-
-        [Required(ErrorMessage = "Membership price is required")]
-        [Range(0.0, double.MaxValue, ErrorMessage = "Membership price must be a positive value")]
-        public decimal Price { get; set; } = 0.0m;
-
-        [Required(ErrorMessage = "Total sessions value is required")]
-        [Range(0, int.MaxValue, ErrorMessage = "Total sessions must be a non-negative value")]
-        public int TotalSessions { get; set; } = 0;
+        public DateTime? NullifiedAt { get; set; }
+        public bool IsActive => NullifiedAt == null && EndDate > DateTime.UtcNow;
 
         [Required(ErrorMessage = "Sessions left value is required")]
         [Range(0, int.MaxValue, ErrorMessage = "Sessions left must be a non-negative value")]

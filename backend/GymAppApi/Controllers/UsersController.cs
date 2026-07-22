@@ -1,4 +1,5 @@
 ﻿using GymAppApi.Application.Users.Commands;
+using GymAppApi.Application.Users.Commands.Promotions;
 using GymAppApi.Application.Users.Queries;
 using GymAppApi.Domain.DTO;
 using GymAppApi.Domain.Models;
@@ -31,9 +32,18 @@ namespace GymAppApi.Controllers
         }
 
         [HttpGet("")]
-        [Authorize(Policy = "RequireManager")]
+        [Authorize(Policy = "RequireHeadManager")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers([FromQuery] GetUsersCommand command, CancellationToken cancellationToken)
+        {
+            var users = await _mediator.Send(command, cancellationToken);
+            return Ok(users);
+        }
+
+        [HttpGet("deactivated")]
+        [Authorize(Policy = "RequireHeadManager")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetDeactivatedUsers([FromQuery] GetDeactivatedUsersCommand command, CancellationToken cancellationToken)
         {
             var users = await _mediator.Send(command, cancellationToken);
             return Ok(users);
@@ -49,15 +59,6 @@ namespace GymAppApi.Controllers
             return Ok(user);
         }
 
-        [HttpPost("giverole")]
-        [Authorize(Policy = "RequireManager")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<UserDetailsDto>> GiveUserRole([FromBody] GiveUserRoleCommand command, CancellationToken cancellationToken)
-        {
-            var user = await _mediator.Send(command, cancellationToken);
-            return Ok(user);
-        }
-
         [HttpDelete("{UserId:guid}")]
         [Authorize(Policy = "RequireManager")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -68,14 +69,57 @@ namespace GymAppApi.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{UserId:guid}/roles/{Role}")]
+        #region Promote
+        [HttpPost("clienttotrainer/{ClientId:guid}")]
         [Authorize(Policy = "RequireManager")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> DeleteRole([FromRoute] Guid UserId, [FromRoute] string Role, CancellationToken cancellationToken) { 
-            var command = new DeleteUserRoleCommand { UserId = UserId, Role = Role };
-            await _mediator.Send(command, cancellationToken);
-            return NoContent();
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<UserDetailsDto>> PromoteClientToTrainer([FromBody] PromoteClientToTrainerCommand command, [FromRoute] Guid ClientId, CancellationToken cancellationToken)
+        {
+            command.ClientId = ClientId;
+            var trainer = await _mediator.Send(command, cancellationToken);
+            return Ok(trainer);
         }
+
+        [HttpPost("clienttomanager/{ClientId:guid}")]
+        [Authorize(Policy = "RequireHeadManager")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<UserDetailsDto>> PromoteClientToManager([FromBody] PromoteClientToManagerCommand command, [FromRoute] Guid ClientId, CancellationToken cancellationToken)
+        {
+            command.ClientId = ClientId;
+            var manager = await _mediator.Send(command, cancellationToken);
+            return Ok(manager);
+        }
+
+        [HttpPost("clienttoheadmanager/{ClientId:guid}")]
+        [Authorize(Policy = "RequireHeadManager")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<UserDetailsDto>> PromoteClientToHeadManager([FromBody] PromoteClientToHeadManagerCommand command, [FromRoute] Guid ClientId, CancellationToken cancellationToken)
+        {
+            command.ClientId = ClientId;
+            var headmanager = await _mediator.Send(command, cancellationToken);
+            return Ok(headmanager);
+        }
+
+        [HttpPost("trainertomanager/{TrainerId:guid}")]
+        [Authorize(Policy = "RequireHeadManager")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<UserDetailsDto>> PromoteTrainerToManager([FromBody] PromoteTrainerToManagerCommand command, [FromRoute] Guid TrainerId, CancellationToken cancellationToken)
+        {
+            command.TrainerId = TrainerId;
+            var manager = await _mediator.Send(command, cancellationToken);
+            return Ok(manager);
+        }
+
+        [HttpPost("managertoheadmanager/{ManagerId:guid}")]
+        [Authorize(Policy = "RequireHeadManager")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<UserDetailsDto>> PromoteManagerToHeadManager([FromBody] PromoteManagerToHeadManagerCommand command, [FromRoute] Guid ManagerId, CancellationToken cancellationToken)
+        {
+            command.ManagerId = ManagerId;
+            var manager = await _mediator.Send(command, cancellationToken);
+            return Ok(manager);
+        }
+        #endregion
 
         [HttpPost("additionalinfo")]
         [Authorize]

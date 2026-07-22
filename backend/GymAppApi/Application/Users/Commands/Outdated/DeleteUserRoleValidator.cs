@@ -2,7 +2,7 @@
 using GymAppApi.Services;
 using GymAppApi.Domain.Constants;
 
-namespace GymAppApi.Application.Users.Commands
+namespace GymAppApi.Application.Users.Commands.Outdated
 {
     public class DeleteUserLastRoleValidator : AbstractValidator<DeleteUserRoleCommand>
     {

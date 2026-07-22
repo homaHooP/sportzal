@@ -5,9 +5,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 public class UserTrainer
 {
     [Key]
-    public Guid Id { get; set; }
-
-    [Required]
     public Guid UserId { get; set; }
 
     [ForeignKey(nameof(UserId))]

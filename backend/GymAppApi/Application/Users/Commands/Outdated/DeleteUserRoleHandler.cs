@@ -8,7 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace GymAppApi.Application.Users.Commands
+namespace GymAppApi.Application.Users.Commands.Outdated
 {
     public class DeleteUserRoleHandler(GymAppDbContext _context, UserManager<User> _userManager, CurrentUserService cus) : IRequestHandler<DeleteUserRoleCommand>
     {
@@ -18,13 +18,6 @@ namespace GymAppApi.Application.Users.Commands
             if (user == null)
             {
                 throw new NotFoundException("User", command.UserId);
-            }
-            if (cus.UserId == command.UserId)
-            {
-                throw new ValidationException(new List<ValidationFailure>
-                {
-                    new ValidationFailure("Friendly fire", "You can't delete own roles")
-                });
             }
 
             var roles = await (from ur in _context.UserRoles

@@ -24,6 +24,7 @@ namespace GymAppApi.Domain.Models
         [Required]
         public BookingStatus Status { get; set; } = BookingStatus.Booked;
 
+        [Required]
         public DateTime BookedAt { get; set; } = DateTime.UtcNow;
     }
 }

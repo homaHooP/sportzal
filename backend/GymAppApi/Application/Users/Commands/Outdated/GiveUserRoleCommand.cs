@@ -1,7 +1,7 @@
 ﻿using GymAppApi.Domain.DTO;
 using MediatR;
 
-namespace GymAppApi.Application.Users.Commands
+namespace GymAppApi.Application.Users.Commands.Outdated
 {
     public class GiveUserRoleCommand : IRequest<UserDetailsDto>
     {

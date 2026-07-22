@@ -8,5 +8,6 @@
         public string Gender { get; set; } = string.Empty;
         public DateTime Birthday { get; set; } = DateTime.MinValue;
         public List<string> Roles { get; set; } = new List<string>();
+        public string WasDeactivated { get; set; } = string.Empty;
     }
 }

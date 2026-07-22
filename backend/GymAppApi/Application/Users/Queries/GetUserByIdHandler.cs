@@ -22,8 +22,9 @@ namespace GymAppApi.Application.Users.Queries
                 Gender = u.Gender ?? string.Empty,
                 Birthday = u.Birthday,
                 Roles = (from ur in u.UserRoles
-                    join r in _context.Roles on ur.RoleId equals r.Id
-                    select r.Name!).ToList()
+                         join r in _context.Roles on ur.RoleId equals r.Id
+                         select r.Name!).ToList(),
+                WasDeactivated = u.WasDeactivated == null ? "Not deactivated" : u.WasDeactivated.ToString()
             }).FirstOrDefaultAsync(u => u.Id == command.Id, cancellationToken);
             if (user == null)
             {

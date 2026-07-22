@@ -34,7 +34,8 @@ namespace GymAppApi.Domain.Models
         [Required(ErrorMessage = "Max participants value is required")]
         [Range(1, 100, ErrorMessage = "Max participants must be between 1 and 100")]
         public int MaxParticipants { get; set; } = 1;
-
+        public bool IsAvailable => StartTime > DateTime.UtcNow && CancelledAt == null && Bookings.Count(b => b.Status == BookingStatus.Booked) < MaxParticipants;
+        public DateTime? CancelledAt { get; set; }
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
 }

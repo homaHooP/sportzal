@@ -9,7 +9,7 @@ using GymAppApi.Application.Users.Queries;
 using GymAppApi.Domain.Constants;
 using GymAppApi.Services;
 
-namespace GymAppApi.Application.Users.Commands
+namespace GymAppApi.Application.Users.Commands.Outdated
 {
     public class GiveUserRoleHandler(CurrentUserService cus,UserManager<User> _userManager, ISender _sender) : IRequestHandler<GiveUserRoleCommand, UserDetailsDto>
     {

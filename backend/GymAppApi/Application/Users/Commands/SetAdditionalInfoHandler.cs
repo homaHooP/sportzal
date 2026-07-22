@@ -6,6 +6,7 @@ using GymAppApi.Application.Common.Exceptions;
 using GymAppApi.Domain.Models;
 using GymAppApi.Data;
 using GymAppApi.Application.Users.Queries;
+using FluentValidation.Results;
 
 namespace GymAppApi.Application.Users.Commands
 {
@@ -18,6 +19,9 @@ namespace GymAppApi.Application.Users.Commands
             {
                 throw new NotFoundException("User", command.UserId);
             }
+            if (user.WasDeactivated != null)
+                throw new ValidationException(new List<ValidationFailure>
+                { new ValidationFailure("User deactivated", "User is deactivated") });
 
             user.FullName = command.Fullname;
             user.Gender = command.Gender;

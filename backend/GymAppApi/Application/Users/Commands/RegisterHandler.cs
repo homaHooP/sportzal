@@ -1,22 +1,26 @@
 ﻿using FluentValidation.Results;
 using GymAppApi.Application.Common.Exceptions;
+using GymAppApi.Data;
+using GymAppApi.Domain.Constants;
 using GymAppApi.Domain.DTO;
 using GymAppApi.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using GymAppApi.Domain.Constants;
+using Microsoft.EntityFrameworkCore;
 
 namespace GymAppApi.Application.Users.Commands
 {
     public class RegisterHandler : IRequestHandler<RegisterCommand, AuthResultDto>
     {
+        private readonly GymAppDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly ISender _sender;
 
-        public RegisterHandler(UserManager<User> userManager, ISender sender)
+        public RegisterHandler(UserManager<User> userManager, ISender sender, GymAppDbContext context)
         {
             _userManager = userManager;
             _sender = sender;
+            _context = context;
         }
 
         public async Task<AuthResultDto> Handle(RegisterCommand request, CancellationToken ct)
@@ -34,6 +38,8 @@ namespace GymAppApi.Application.Users.Commands
                 Email = request.email
             };
 
+            await using var transaction = await _context.Database.BeginTransactionAsync(ct);
+
             var result = await _userManager.CreateAsync(newUser, request.password);
             if (!result.Succeeded)
                 throw new ValidationException(
@@ -45,6 +51,12 @@ namespace GymAppApi.Application.Users.Commands
                 throw new ValidationException(
                     roleResult.Errors.Select(e => new ValidationFailure("Role", e.Description)).ToList()
                 );
+
+            var client = new UserClient { UserId = newUser.Id };
+            _context.UserClients.Add(client);
+            await _context.SaveChangesAsync(ct);
+
+            await transaction.CommitAsync(ct);
 
             return await _sender.Send(new LoginCommand
             {

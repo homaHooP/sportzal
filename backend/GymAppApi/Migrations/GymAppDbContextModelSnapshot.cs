@@ -59,6 +59,9 @@ namespace GymAppApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -81,9 +84,11 @@ namespace GymAppApi.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Price")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("NullifiedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("SessionsLeft")
                         .HasColumnType("int");
@@ -91,15 +96,14 @@ namespace GymAppApi.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("TotalSessions")
-                        .HasColumnType("int");
-
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("GymId");
 
                     b.ToTable("Memberships");
                 });
@@ -144,6 +148,9 @@ namespace GymAppApi.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
@@ -238,6 +245,9 @@ namespace GymAppApi.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<DateTime?>("WasDeactivated")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
@@ -253,19 +263,27 @@ namespace GymAppApi.Migrations
 
             modelBuilder.Entity("GymAppApi.Domain.Models.UserClient", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasKey("UserId");
 
                     b.ToTable("UserClients");
+                });
+
+            modelBuilder.Entity("GymAppApi.Domain.Models.UserGymManager", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("UserGymManagers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -401,8 +419,7 @@ namespace GymAppApi.Migrations
 
             modelBuilder.Entity("UserTrainer", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Specialty")
@@ -410,13 +427,7 @@ namespace GymAppApi.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasKey("UserId");
 
                     b.ToTable("UserTrainers");
                 });
@@ -426,7 +437,7 @@ namespace GymAppApi.Migrations
                     b.HasOne("GymAppApi.Domain.Models.UserClient", "Client")
                         .WithMany("Bookings")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("GymAppApi.Domain.Models.Session", "Session")
@@ -445,10 +456,18 @@ namespace GymAppApi.Migrations
                     b.HasOne("GymAppApi.Domain.Models.UserClient", "Client")
                         .WithMany("Memberships")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GymAppApi.Domain.Models.Gym", "Gym")
+                        .WithMany("Memberships")
+                        .HasForeignKey("GymId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Client");
+
+                    b.Navigation("Gym");
                 });
 
             modelBuilder.Entity("GymAppApi.Domain.Models.RefreshToken", b =>
@@ -488,6 +507,25 @@ namespace GymAppApi.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GymAppApi.Domain.Models.UserGymManager", b =>
+                {
+                    b.HasOne("GymAppApi.Domain.Models.Gym", "ManagedGym")
+                        .WithMany("Managers")
+                        .HasForeignKey("GymId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GymAppApi.Domain.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ManagedGym");
 
                     b.Navigation("User");
                 });
@@ -556,6 +594,10 @@ namespace GymAppApi.Migrations
 
             modelBuilder.Entity("GymAppApi.Domain.Models.Gym", b =>
                 {
+                    b.Navigation("Managers");
+
+                    b.Navigation("Memberships");
+
                     b.Navigation("Sessions");
                 });
 
