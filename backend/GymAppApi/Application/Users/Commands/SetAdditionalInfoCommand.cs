@@ -4,7 +4,7 @@ using GymAppApi.Application.Common;
 
 namespace GymAppApi.Application.Users.Commands
 {
-    public class SetAdditionalInfoCommand : IRequest<UserDetailsDto>, IClientOwnedRequest
+    public class SetAdditionalInfoCommand : IRequest<AuthResultDto>, IClientOwnedRequest
     {
         public Guid UserId { get; set; }
         public string Fullname { get; set; } = string.Empty;

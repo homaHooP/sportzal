@@ -20,13 +20,14 @@ namespace GymAppApi.Services.Token
         {
             var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Email, user.Email!),
-            new(ClaimTypes.Name, user.FullName)
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email!),
+            new(JwtRegisteredClaimNames.Name, user.FullName),
+            new("profileComplete", IsProfileComplete(user).ToString())
         };
 
             foreach (var role in roles)
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                claims.Add(new Claim("role", role));
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration["JWT:Key"]!));
@@ -36,7 +37,7 @@ namespace GymAppApi.Services.Token
                 issuer: _configuration["JWT:Issuer"],
                 audience: _configuration["JWT:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(15),
                 signingCredentials: creds
             );
 
@@ -49,6 +50,11 @@ namespace GymAppApi.Services.Token
             RandomNumberGenerator.Fill(randomBytes);
             return Convert.ToBase64String(randomBytes);
         }
+
+        private static bool IsProfileComplete(User user) =>
+            !string.IsNullOrWhiteSpace(user.FullName) &&
+            user.Birthday != DateTime.MinValue &&
+            !string.IsNullOrWhiteSpace(user.Gender);
         public RefreshToken GenerateRefreshToken(Guid userId)
         {
             return new RefreshToken

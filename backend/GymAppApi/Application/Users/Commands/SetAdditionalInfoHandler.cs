@@ -7,14 +7,15 @@ using GymAppApi.Domain.Models;
 using GymAppApi.Data;
 using GymAppApi.Application.Users.Queries;
 using FluentValidation.Results;
+using GymAppApi.Services.Token;
 
 namespace GymAppApi.Application.Users.Commands
 {
-    public class SetAdditionalInfoHandler(GymAppDbContext _context, ISender _sender) : IRequestHandler<SetAdditionalInfoCommand,UserDetailsDto>
+    public class SetAdditionalInfoHandler(UserManager<User> _userManager, ITokenService _tokenService) : IRequestHandler<SetAdditionalInfoCommand,AuthResultDto>
     {
-        public async Task<UserDetailsDto> Handle(SetAdditionalInfoCommand command, CancellationToken cancellationToken)
+        public async Task<AuthResultDto> Handle(SetAdditionalInfoCommand command, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x=> x.Id == command.UserId, cancellationToken);
+            var user = await _userManager.Users.FirstOrDefaultAsync(x=> x.Id == command.UserId, cancellationToken);
             if (user == null)
             {
                 throw new NotFoundException("User", command.UserId);
@@ -27,8 +28,11 @@ namespace GymAppApi.Application.Users.Commands
             user.Gender = command.Gender;
             user.Birthday = command.Birthday;
 
-            await _context.SaveChangesAsync(cancellationToken);
-            return await _sender.Send(new GetUserByIdCommand { Id = user.Id });
+            await _userManager.UpdateAsync(user);
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var accessToken = _tokenService.GenerateAccessToken(user, roles);
+            return new AuthResultDto(accessToken, null);
         }
     }
 }
