@@ -1,0 +1,26 @@
+@import "normalize.css";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'DM Sans', sans-serif;
+  --font-hero: 'Urbanist', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --color-back: var(--c-back);
+  --color-back-light: var(--c-back-light);
+  --color-text: var(--c-text);
+  --color-border: var(--c-border);
+  --color-text-calm: var(--c-text-calm);
+  --color-accent: var(--c-accent);
+  --color-accent-2: var(--c-accent-2);
+}
+
+:root {
+  --c-back: #ffffff;
+  --c-back-light: #f1f1f1;
+  --c-text: #37353E;
+  --c-border: #e4e1dd;
+  --c-text-calm: #6B6870;
+  --c-accent: #6491ef;
+  --c-accent-2: #e1a532;
+}
